@@ -2,6 +2,7 @@ package jpabook.jpashop.domain;
 
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @Getter @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED) /* ✨✨ */
 public class Order {
     @Id
     @GeneratedValue
@@ -58,5 +59,44 @@ public class Order {
         delivery.setOrder(this);
     }
 
+    //==생성 메서드==//
+    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems) {
+        Order order = new Order();
+        order.member = member;
+        order.delivery = delivery;
+        for (OrderItem orderItem : orderItems) {
+            order.orderItems.add(orderItem);
+        }
+        order.status = OrderStatus.ORDER;
+        order.orderDate = LocalDateTime.now();
+        return order;
+    }
 
+    //==비지니스 로직==//
+
+    /**
+     * 주문 취소
+     */
+    public void cancel() {
+        if (delivery.getStatus() == DeliveryStatus.COMP) {
+            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
+        }
+
+        this.status = OrderStatus.CANCEL;
+        for (OrderItem orderItem : this.orderItems) {
+            // 해당 관련 entity에서 cancel 메서드 발생
+            orderItem.cancel();
+        }
+    }
+
+
+    //== 조회 로직 ==//
+    /**
+     * 전체 주문 가격 조회
+     * */
+    public int getTotalPrice() {
+        return orderItems.stream()
+                .mapToInt(OrderItem::getTotalPrice)
+                .sum();
+    }
 }
