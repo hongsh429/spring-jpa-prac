@@ -99,4 +99,9 @@ public class Order {
                 .mapToInt(OrderItem::getTotalPrice)
                 .sum();
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
