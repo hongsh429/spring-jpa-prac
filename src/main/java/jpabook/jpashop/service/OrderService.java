@@ -27,7 +27,7 @@ public class OrderService {
     /**
      * 주문
      */
-    @Transactional
+    @Transactional      // 이걸 해야 영속상태로 진행이 된다!
     public Long order(Long memberId, Long itemId, int count) {
         // 엔티티 조회
         Member member = memberRepository.findOne(memberId);
